@@ -3,12 +3,14 @@ const cookieParser = require("cookie-parser");
 const dotenv = require("dotenv");
 const app = express();
 const userRouter = require("./routes/userRoutes");
+const postRouter = require("./routes/postRoutes");
 
 dotenv.config();
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+app.use("/api", postRouter);
 app.use("/api", userRouter);
 app.get("/", (req, res) => {
   res.send("Hello World!");

@@ -2,21 +2,26 @@ const prisma = require("../prisma/index");
 
 const jwt = require("jsonwebtoken");
 
-exports.isLoggedIn = async (req, res, next) => {
-  const token = req.cookies.token;
+const isLoggedIn = async (req, res, next) => {
+  try {
+    const token = req.cookies.token;
 
-  const decoded = jwt.verify(token, process.env.JWT_SECRET);
-  if (!decoded) {
-    return res
-      .status(401)
-      .json({ message: "Unauthorized, please login first" });
+    if (!token) {
+      res.send("Please login");
+      throw new Error("You are not logged in"); // send a response and close next
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = await prisma.user.findUnique({
+      where: {
+        id: decoded.userId, // corrected to userId
+      },
+    });
+    //you can do more checks
+    next();
+  } catch (error) {
+    throw new Error(error);
   }
-
-  req.user = await prisma.user.findUnique({
-    where: {
-      id: decoded.userId,
-    },
-  });
-
-  next();
 };
+
+module.exports = isLoggedIn;
